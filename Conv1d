@@ -1,0 +1,400 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Conv1d.ipynb",
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "execution_count": 39,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "YXBnFF4eHGf1",
+        "outputId": "de186f45-92da-44aa-d26e-7b8bbd1f25f6"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: tensorflow-text==2.8.* in /usr/local/lib/python3.7/dist-packages (2.8.1)\n",
+            "Requirement already satisfied: tensorflow-hub>=0.8.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow-text==2.8.*) (0.12.0)\n",
+            "Requirement already satisfied: tensorflow<2.9,>=2.8.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow-text==2.8.*) (2.8.0)\n",
+            "Requirement already satisfied: protobuf>=3.9.2 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (3.17.3)\n",
+            "Requirement already satisfied: typing-extensions>=3.6.6 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (3.10.0.2)\n",
+            "Requirement already satisfied: setuptools in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (57.4.0)\n",
+            "Requirement already satisfied: keras<2.9,>=2.8.0rc0 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (2.8.0)\n",
+            "Requirement already satisfied: h5py>=2.9.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (3.1.0)\n",
+            "Requirement already satisfied: tf-estimator-nightly==2.8.0.dev2021122109 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (2.8.0.dev2021122109)\n",
+            "Requirement already satisfied: six>=1.12.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.15.0)\n",
+            "Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.1.0)\n",
+            "Requirement already satisfied: tensorboard<2.9,>=2.8 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (2.8.0)\n",
+            "Requirement already satisfied: numpy>=1.20 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.21.5)\n",
+            "Requirement already satisfied: keras-preprocessing>=1.1.1 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.1.2)\n",
+            "Requirement already satisfied: astunparse>=1.6.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.6.3)\n",
+            "Requirement already satisfied: libclang>=9.0.1 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (13.0.0)\n",
+            "Requirement already satisfied: google-pasta>=0.1.1 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (0.2.0)\n",
+            "Requirement already satisfied: flatbuffers>=1.12 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (2.0)\n",
+            "Requirement already satisfied: opt-einsum>=2.3.2 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (3.3.0)\n",
+            "Requirement already satisfied: wrapt>=1.11.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.14.0)\n",
+            "Requirement already satisfied: absl-py>=0.4.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.0.0)\n",
+            "Requirement already satisfied: gast>=0.2.1 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (0.5.3)\n",
+            "Requirement already satisfied: tensorflow-io-gcs-filesystem>=0.23.1 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (0.24.0)\n",
+            "Requirement already satisfied: grpcio<2.0,>=1.24.3 in /usr/local/lib/python3.7/dist-packages (from tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.44.0)\n",
+            "Requirement already satisfied: wheel<1.0,>=0.23.0 in /usr/local/lib/python3.7/dist-packages (from astunparse>=1.6.0->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (0.37.1)\n",
+            "Requirement already satisfied: cached-property in /usr/local/lib/python3.7/dist-packages (from h5py>=2.9.0->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.5.2)\n",
+            "Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (3.3.6)\n",
+            "Requirement already satisfied: google-auth-oauthlib<0.5,>=0.4.1 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (0.4.6)\n",
+            "Requirement already satisfied: tensorboard-plugin-wit>=1.6.0 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.8.1)\n",
+            "Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.0.1)\n",
+            "Requirement already satisfied: google-auth<3,>=1.6.3 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.35.0)\n",
+            "Requirement already satisfied: tensorboard-data-server<0.7.0,>=0.6.0 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (0.6.1)\n",
+            "Requirement already satisfied: requests<3,>=2.21.0 in /usr/local/lib/python3.7/dist-packages (from tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (2.23.0)\n",
+            "Requirement already satisfied: rsa<5,>=3.1.4 in /usr/local/lib/python3.7/dist-packages (from google-auth<3,>=1.6.3->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (4.8)\n",
+            "Requirement already satisfied: pyasn1-modules>=0.2.1 in /usr/local/lib/python3.7/dist-packages (from google-auth<3,>=1.6.3->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (0.2.8)\n",
+            "Requirement already satisfied: cachetools<5.0,>=2.0.0 in /usr/local/lib/python3.7/dist-packages (from google-auth<3,>=1.6.3->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (4.2.4)\n",
+            "Requirement already satisfied: requests-oauthlib>=0.7.0 in /usr/local/lib/python3.7/dist-packages (from google-auth-oauthlib<0.5,>=0.4.1->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.3.1)\n",
+            "Requirement already satisfied: importlib-metadata>=4.4 in /usr/local/lib/python3.7/dist-packages (from markdown>=2.6.8->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (4.11.3)\n",
+            "Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.7/dist-packages (from importlib-metadata>=4.4->markdown>=2.6.8->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (3.7.0)\n",
+            "Requirement already satisfied: pyasn1<0.5.0,>=0.4.6 in /usr/local/lib/python3.7/dist-packages (from pyasn1-modules>=0.2.1->google-auth<3,>=1.6.3->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (0.4.8)\n",
+            "Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.7/dist-packages (from requests<3,>=2.21.0->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (3.0.4)\n",
+            "Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.7/dist-packages (from requests<3,>=2.21.0->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (2.10)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.7/dist-packages (from requests<3,>=2.21.0->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (2021.10.8)\n",
+            "Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.7/dist-packages (from requests<3,>=2.21.0->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (1.24.3)\n",
+            "Requirement already satisfied: oauthlib>=3.0.0 in /usr/local/lib/python3.7/dist-packages (from requests-oauthlib>=0.7.0->google-auth-oauthlib<0.5,>=0.4.1->tensorboard<2.9,>=2.8->tensorflow<2.9,>=2.8.0->tensorflow-text==2.8.*) (3.2.0)\n"
+          ]
+        }
+      ],
+      "source": [
+        "!pip install tensorflow-text==2.8.*"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import collections\n",
+        "import pathlib\n",
+        "\n",
+        "import tensorflow as tf\n",
+        "\n",
+        "from tensorflow.keras import layers\n",
+        "from tensorflow.keras import losses\n",
+        "from tensorflow.keras import utils\n",
+        "from tensorflow.keras.layers import TextVectorization\n",
+        "\n",
+        "import tensorflow_datasets as tfds\n",
+        "import tensorflow_text as tf_text"
+      ],
+      "metadata": {
+        "id": "S1xqlkMTHMZf"
+      },
+      "execution_count": 40,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "BATCH_SIZE = 64\n",
+        "VOCAB_SIZE = 10000\n",
+        "MAX_SEQUENCE_LENGTH = 250"
+      ],
+      "metadata": {
+        "id": "hUDuVakxIBDn"
+      },
+      "execution_count": 41,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Training set.\n",
+        "train_ds = tfds.load(\n",
+        "    'imdb_reviews',\n",
+        "    split='train[:80%]',\n",
+        "    batch_size=BATCH_SIZE,\n",
+        "    shuffle_files=True,\n",
+        "    as_supervised=True)"
+      ],
+      "metadata": {
+        "id": "FI7oB7sJHOkr"
+      },
+      "execution_count": 42,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Validation set.\n",
+        "val_ds = tfds.load(\n",
+        "    'imdb_reviews',\n",
+        "    split='train[80%:]',\n",
+        "    batch_size=BATCH_SIZE,\n",
+        "    shuffle_files=True,\n",
+        "    as_supervised=True)"
+      ],
+      "metadata": {
+        "id": "nw1Zd8AFIDJ4"
+      },
+      "execution_count": 43,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "for review_batch, label_batch in val_ds.take(1):\n",
+        "  for i in range(5):\n",
+        "    print(\"Review: \", review_batch[i].numpy())\n",
+        "    print(\"Label: \", label_batch[i].numpy())"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "psykNBV4IFyu",
+        "outputId": "dc9d929f-5bb4-40d5-ead4-a5598ce34f06"
+      },
+      "execution_count": 44,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Review:  b\"Instead, go to the zoo, buy some peanuts and feed 'em to the monkeys. Monkeys are funny. People with amnesia who don't say much, just sit there with vacant eyes are not all that funny.<br /><br />Black comedy? There isn't a black person in it, and there isn't one funny thing in it either.<br /><br />Walmart buys these things up somehow and puts them on their dollar rack. It's labeled Unrated. I think they took out the topless scene. They may have taken out other stuff too, who knows? All we know is that whatever they took out, isn't there any more.<br /><br />The acting seemed OK to me. There's a lot of unfathomables tho. It's supposed to be a city? It's supposed to be a big lake? If it's so hot in the church people are fanning themselves, why are they all wearing coats?\"\n",
+            "Label:  0\n",
+            "Review:  b'Well, was Morgan Freeman any more unusual as God than George Burns? This film sure was better than that bore, \"Oh, God\". I was totally engrossed and LMAO all the way through. Carrey was perfect as the out of sorts anchorman wannabe, and Aniston carried off her part as the frustrated girlfriend in her usual well played performance. I, for one, don\\'t consider her to be either ugly or untalented. I think my favorite scene was when Carrey opened up the file cabinet thinking it could never hold his life history. See if you can spot the file in the cabinet that holds the events of his bathroom humor: I was rolling over this one. Well written and even better played out, this comedy will go down as one of this funnyman\\'s best.'\n",
+            "Label:  1\n",
+            "Review:  b'I remember stumbling upon this special while channel-surfing in 1965. I had never heard of Barbra before. When the show was over, I thought \"This is probably the best thing on TV I will ever see in my life.\" 42 years later, that has held true. There is still nothing so amazing, so honestly astonishing as the talent that was displayed here. You can talk about all the super-stars you want to, this is the most superlative of them all!<br /><br />You name it, she can do it. Comedy, pathos, sultry seduction, ballads, Barbra is truly a story-teller. Her ability to pull off anything she attempts is legendary. But this special was made in the beginning, and helped to create the legend that she quickly became. In spite of rising so far in such a short time, she has fulfilled the promise, revealing more of her talents as she went along. But they are all here from the very beginning. You will not be disappointed in viewing this.'\n",
+            "Label:  1\n",
+            "Review:  b\"Firstly, I would like to point out that people who have criticised this film have made some glaring errors. Anything that has a rating below 6/10 is clearly utter nonsense.<br /><br />Creep is an absolutely fantastic film with amazing film effects. The actors are highly believable, the narrative thought provoking and the horror and graphical content extremely disturbing. <br /><br />There is much mystique in this film. Many questions arise as the audience are revealed to the strange and freakish creature that makes habitat in the dark rat ridden tunnels. How was 'Craig' created and what happened to him?<br /><br />A fantastic film with a large chill factor. A film with so many unanswered questions and a film that needs to be appreciated along with others like 28 Days Later, The Bunker, Dog Soldiers and Deathwatch.<br /><br />Look forward to more of these fantastic films!!\"\n",
+            "Label:  1\n",
+            "Review:  b\"I'm sorry but I didn't like this doc very much. I can think of a million ways it could have been better. The people who made it obviously don't have much imagination. The interviews aren't very interesting and no real insight is offered. The footage isn't assembled in a very informative way, either. It's too bad because this is a movie that really deserves spellbinding special features. One thing I'll say is that Isabella Rosselini gets more beautiful the older she gets. All considered, this only gets a '4.'\"\n",
+            "Label:  0\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "vectorize_layer = TextVectorization(\n",
+        "    max_tokens=VOCAB_SIZE,\n",
+        "    output_mode='int',\n",
+        "    output_sequence_length=MAX_SEQUENCE_LENGTH)\n",
+        "\n",
+        "# Make a text-only dataset (without labels), then call `TextVectorization.adapt`.\n",
+        "train_text = train_ds.map(lambda text, labels: text)\n",
+        "vectorize_layer.adapt(train_text)"
+      ],
+      "metadata": {
+        "id": "d9GO4YniILim"
+      },
+      "execution_count": 45,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def vectorize_text(text, label):\n",
+        "  text = tf.expand_dims(text, -1)\n",
+        "  return vectorize_layer(text), label"
+      ],
+      "metadata": {
+        "id": "sX4eP0fTIRf2"
+      },
+      "execution_count": 46,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "train_ds = train_ds.map(vectorize_text)\n",
+        "val_ds = val_ds.map(vectorize_text)"
+      ],
+      "metadata": {
+        "id": "QhEdhebQJlmM"
+      },
+      "execution_count": 47,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "AUTOTUNE = tf.data.AUTOTUNE\n",
+        "\n",
+        "def configure_dataset(dataset):\n",
+        "  return dataset.cache().prefetch(buffer_size=AUTOTUNE)"
+      ],
+      "metadata": {
+        "id": "wkPX8fgTKMBc"
+      },
+      "execution_count": 48,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Configure datasets for performance as before.\n",
+        "train_ds = configure_dataset(train_ds)\n",
+        "val_ds = configure_dataset(val_ds)"
+      ],
+      "metadata": {
+        "id": "0-uSNAsRK6yW"
+      },
+      "execution_count": 49,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def create_model(vocab_size, num_labels):\n",
+        "  model = tf.keras.Sequential([\n",
+        "      layers.Embedding(vocab_size, 64, mask_zero=True),\n",
+        "      layers.Conv1D(64, 5, padding=\"valid\", activation=\"relu\", strides=2),\n",
+        "      layers.GlobalMaxPooling1D(),\n",
+        "      layers.Dense(num_labels)\n",
+        "  ])\n",
+        "  return model"
+      ],
+      "metadata": {
+        "id": "twuWUrqBLBHd"
+      },
+      "execution_count": 59,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model = create_model(vocab_size=VOCAB_SIZE + 1, num_labels=1)\n",
+        "model.summary()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "hQYEyFzGLRL9",
+        "outputId": "11b57427-0ca5-4e15-d9b4-cbc7ba1e1f9a"
+      },
+      "execution_count": 60,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Model: \"sequential_3\"\n",
+            "_________________________________________________________________\n",
+            " Layer (type)                Output Shape              Param #   \n",
+            "=================================================================\n",
+            " embedding_3 (Embedding)     (None, None, 64)          640064    \n",
+            "                                                                 \n",
+            " conv1d_3 (Conv1D)           (None, None, 64)          20544     \n",
+            "                                                                 \n",
+            " global_max_pooling1d_2 (Glo  (None, 64)               0         \n",
+            " balMaxPooling1D)                                                \n",
+            "                                                                 \n",
+            " dense_3 (Dense)             (None, 1)                 65        \n",
+            "                                                                 \n",
+            "=================================================================\n",
+            "Total params: 660,673\n",
+            "Trainable params: 660,673\n",
+            "Non-trainable params: 0\n",
+            "_________________________________________________________________\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model.compile(\n",
+        "    loss=losses.BinaryCrossentropy(from_logits=True),\n",
+        "    optimizer='adam',\n",
+        "    metrics=['accuracy'])"
+      ],
+      "metadata": {
+        "id": "g4HxJC3WLUzz"
+      },
+      "execution_count": 61,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "history = model.fit(train_ds, validation_data=val_ds, epochs=3)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "u-igjg6ILY4h",
+        "outputId": "06c12fa4-af34-405e-a438-4a7ab96939a7"
+      },
+      "execution_count": 62,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Epoch 1/3\n",
+            "313/313 [==============================] - 15s 46ms/step - loss: 0.5390 - accuracy: 0.6644 - val_loss: 0.3722 - val_accuracy: 0.8266\n",
+            "Epoch 2/3\n",
+            "313/313 [==============================] - 14s 46ms/step - loss: 0.2976 - accuracy: 0.8694 - val_loss: 0.3163 - val_accuracy: 0.8580\n",
+            "Epoch 3/3\n",
+            "313/313 [==============================] - 14s 46ms/step - loss: 0.1820 - accuracy: 0.9297 - val_loss: 0.3189 - val_accuracy: 0.8620\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "loss, accuracy = model.evaluate(val_ds)\n",
+        "\n",
+        "print(\"Loss: \", loss)\n",
+        "print(\"Accuracy: {:2.2%}\".format(accuracy))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "D-AH3GYGLdb5",
+        "outputId": "51f34c17-c4b7-47fa-cbba-856961711ddf"
+      },
+      "execution_count": 63,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "79/79 [==============================] - 1s 11ms/step - loss: 0.3189 - accuracy: 0.8620\n",
+            "Loss:  0.3189059793949127\n",
+            "Accuracy: 86.20%\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        ""
+      ],
+      "metadata": {
+        "id": "Uk8Y0hhoLomu"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
